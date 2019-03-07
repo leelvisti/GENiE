@@ -1,25 +1,12 @@
 // Authors: Elvis Le and Alice Pierce
 #include <iostream>
-
-void createTitleBanner();
+#include "auxilliary.h"
 
 int main() {
-  // variable decalrations
   unsigned int userChoice = 0; // keep track of what user chooses to do
   bool notValidChoice; // check if user's choice is valid
-  /*
-   * Prompt user with options to choose
-   * 1) program will do DNA to protein translation
-   * 2) program will do protein to DNA translation
-   * 3) program exits
-   */
-  createTitleBanner();
-  std::cout << "What would you like to do:\n"
-    "1) DNA-Protein Translation\n"
-    "2) Protein-DNA Back Translation\n"
-    "3) Exit GENiE\n";
-
-  std::cout << "> ";
+  // create title banner and display menu
+  CreateTitleBanner();
   std::cin >> userChoice; // take in user's choice
 
   /*
@@ -44,26 +31,9 @@ int main() {
       true : false;
   } // while
 
-  switch (userChoice) {
-    case 1:
-      std::cout << "DNA-Protein\n";
-      break;
-    case 2:
-      std::cout << "Protein-DNA\n";
-      break;
-    default:
-      std::cout << "Exiting GENiE\n";
-      break;
-  }
+  ProcessUserChoice(userChoice);
+
   return 0;
 
 } // main
 
-void createTitleBanner() {
-  std::cout << 
-    "  ____   ___   _____   __   ___\n"
-    " / ___| |  _| |   | | (__) |  _|\n"
-    "| |  _  | |_  |   | | |  | | |_\n"
-    "| |_| | |  _| | |   | |  | |  _|\n"
-    " \\____| |___| |_|___| |__| |___|\n\n";
-} // createTitleBanner
