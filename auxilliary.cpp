@@ -65,12 +65,14 @@ void DoDNAToProtein() {
   std::shared_ptr<std::string> complementaryDNAPtr = std::make_shared<std::string>(complementaryDNA.getReverseSequence());
   
   TranslateToProtein(templateDNAPtr, complementaryDNAPtr);
+
 } // DoDNAToProtein
 
 // find open reading frames to translate
 void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<std::string> strand2) {
   std::string openReadingFrame1, openReadingFrame2, finalOpenReadingFrame;
-  
+  std::vector<std::string> strandVector; // store multiple reading frames
+
   // iterate through strand to find start codon (ATG_ and stop codons (TAA, TAG, or TGA)
   // DNA Template
   std::cout << "Attempting to find reading frames from DNA template strand...\n";
@@ -88,16 +90,30 @@ void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<st
   // if template reading frame is larger, set final reading frame to template ORF
   if (openReadingFrame1.size() > openReadingFrame2.size()) {
     finalOpenReadingFrame = openReadingFrame1;
+    strandVector.push_back(openReadingFrame1);  
   } // if
   // if complementary reading frame is larger, set final reading frame to template ORF
   else if (openReadingFrame2.size() > openReadingFrame1.size()) {
     finalOpenReadingFrame = openReadingFrame2;
-  } 
+    strandVector.push_back(openReadingFrame2);  
+  } // else if
   // if both template and complementary reading frame are equal in size, push to vector
   else if (openReadingFrame1.size() == openReadingFrame2.size()) {
-    
-  }
+    strandVector.push_back(openReadingFrame1);  
+    strandVector.push_back(openReadingFrame2);  
+  } // else if
 
+  std::cout << "Final Open Reading Frame(s): ";
+
+  int vectorIteration = 0;
+  for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
+    std::cout << *itr << std::endl;
+    // formatting purposes for showing multiple final open reading frames
+    if (vectorIteration != strandVector.size() - 1)
+      std::cout << "                             "; 
+    
+    vectorIteration++;
+  } // for
 } // TranslateToProtein
 
 // Find Open Reading Frames of strand to attempt translation to Protein
