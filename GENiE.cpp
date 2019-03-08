@@ -1,5 +1,4 @@
 // Authors: Elvis Le and Alice Pierce
-#include <iostream>
 #include "auxilliary.h"
 
 int main() {
