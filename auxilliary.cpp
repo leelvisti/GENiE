@@ -71,49 +71,38 @@ void DoDNAToProtein() {
 // find open reading frames to translate
 void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<std::string> strand2) {
   std::string openReadingFrame1, openReadingFrame2, finalOpenReadingFrame;
-  std::vector<std::string> strandVector; // store multiple reading frames
-
+  std::vector<DNA> strandVector; // store multiple reading frames
+  DNA dnaToBeTranscribed;
   // iterate through strand to find start codon (ATG_ and stop codons (TAA, TAG, or TGA)
   // DNA Template
   std::cout << "Attempting to find reading frames from DNA template strand...\n";
   openReadingFrame1 = FindOpenReadingFrame(strand1);
   openReadingFrame1.size() == 0 ? 
     std::cout << "No Open Reading Frame found for DNA template strand\n" : std::cout << std::endl;
-  
+  DNA templateDNA;
+  templateDNA.setSequence(openReadingFrame1);
+
   // DNA complementary 
   std::cout << "Attempting to find reading frames from DNA complementary strand...\n";
   openReadingFrame2 = FindOpenReadingFrame(strand2);
   openReadingFrame2.size() == 0 ? 
     std::cout << "No Open Reading Frame found for DNA complementary strand\n" : std::cout << std::endl;  
+  DNA complementaryDNA;
+  complementaryDNA.setSequence(openReadingFrame2);
 
-  // Get the larger of the two reading frames
-  // if template reading frame is larger, set final reading frame to template ORF
-  if (openReadingFrame1.size() > openReadingFrame2.size()) {
-    finalOpenReadingFrame = openReadingFrame1;
-    strandVector.push_back(openReadingFrame1);  
-  } // if
-  // if complementary reading frame is larger, set final reading frame to template ORF
-  else if (openReadingFrame2.size() > openReadingFrame1.size()) {
-    finalOpenReadingFrame = openReadingFrame2;
-    strandVector.push_back(openReadingFrame2);  
-  } // else if
   // if both template and complementary reading frame are equal in size, push to vector
-  else if (openReadingFrame1.size() == openReadingFrame2.size()) {
-    strandVector.push_back(openReadingFrame1);  
-    strandVector.push_back(openReadingFrame2);  
-  } // else if
+  if (openReadingFrame1.size() == openReadingFrame2.size()) {
+    strandVector.push_back(templateDNA);
+    strandVector.push_back(complementaryDNA);
+  } // if
+  else {
+    finalOpenReadingFrame = (openReadingFrame1.size() > openReadingFrame2.size() ?
+        openReadingFrame1 : openReadingFrame2);
+    dnaToBeTranscribed.setSequence(finalOpenReadingFrame);
+    strandVector.push_back(dnaToBeTranscribed);
+  } // else
 
-  std::cout << "Final Open Reading Frame(s): ";
-
-  int vectorIteration = 0;
-  for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
-    std::cout << *itr << std::endl;
-    // formatting purposes for showing multiple final open reading frames
-    if (vectorIteration != strandVector.size() - 1)
-      std::cout << "                             "; 
-    
-    vectorIteration++;
-  } // for
+  PrintReadingFrames(strandVector);
 } // TranslateToProtein
 
 // Find Open Reading Frames of strand to attempt translation to Protein
@@ -189,4 +178,18 @@ void FindStopCodon(std::shared_ptr<std::string> strand, std::shared_ptr<int> cou
     } // if
   } // if
 
-}
+} // FindStopCodon
+
+void PrintReadingFrames(std::vector<DNA> strandVector) {
+  std::cout << "Final Open Reading Frame(s): ";
+  
+  int vectorIteration = 0;
+  for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
+    std::cout << itr->getSequence() << std::endl;
+    // formatting purposes for showing multiple final open reading frames
+    if (vectorIteration != strandVector.size() - 1)
+      std::cout << "                             "; 
+    
+    vectorIteration++;
+  } // for
+} // PrintReadingFrames

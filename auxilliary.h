@@ -15,6 +15,6 @@ void FindStartCodon(std::shared_ptr<int> count, std::shared_ptr<std::string> cod
     std::shared_ptr<int> pos, std::shared_ptr<int> i);
 void FindStopCodon(std::shared_ptr<std::string> strand, std::shared_ptr<int> count, std::shared_ptr<std::string> codon, std::shared_ptr<bool> isATGPresent,
     std::shared_ptr<int> pos, std::shared_ptr<int> endPos, std::shared_ptr<int> i, std::shared_ptr<std::string> openReadingFrame);
-
+void PrintReadingFrames(std::vector<DNA> strandVector);
 
 #endif
