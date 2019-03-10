@@ -103,6 +103,7 @@ void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<st
   } // else
 
   PrintReadingFrames(strandVector);
+  TranscribeToRNA(strandVector);
 } // TranslateToProtein
 
 // Find Open Reading Frames of strand to attempt translation to Protein
@@ -193,3 +194,9 @@ void PrintReadingFrames(std::vector<DNA> strandVector) {
     vectorIteration++;
   } // for
 } // PrintReadingFrames
+
+void TranscribeToRNA(std::vector<DNA> strandVector) {
+  for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
+    itr->transcribeToRNA();
+  } // for
+} // TranscribeToRNA

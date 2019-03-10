@@ -78,3 +78,15 @@ std::string reverseString(const std::string sequence_) {
   
   return copy;
 } // setReverseSequence()
+
+// transcribe DNA strand to mRNA sequence
+void DNA::transcribeToRNA() {
+  for (int i = 0; i < sequence.size(); i++) {
+    if (sequence[i] == 'T')
+      mRNASequence.append("U");
+    else
+      mRNASequence.push_back(sequence[i]);
+  } // for
+
+  std::cout << mRNASequence << std::endl;
+} // TranscribeToRNA
