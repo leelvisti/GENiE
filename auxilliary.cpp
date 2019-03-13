@@ -22,6 +22,33 @@ void CreateTitleBanner() {
     "> ";
 } // createTitleBanner
 
+std::map<std::string, std::string> CreateAminoAcidCodonMap() {
+  std::map<std::string, std::string> threeLetterMap;
+  threeLetterMap["UUU"] = "Phe";  threeLetterMap["UUC"] = "Phe"; 
+  threeLetterMap["UUA"] = "Leu";  threeLetterMap["UUG"] = "Leu";
+  threeLetterMap["UCU"] = "Ser";  threeLetterMap["UCC"] = "Ser";  threeLetterMap["UCA"] = "Ser";
+  threeLetterMap["UCG"] = "Ser";  threeLetterMap["UAU"] = "Tyr";  threeLetterMap["UAC"] = "Tyr";
+  threeLetterMap["UGU"] = "Cys";  threeLetterMap["UGC"] = "Cys";  threeLetterMap["UGG"] = "Trp";
+  threeLetterMap["CUU"] = "Leu";  threeLetterMap["CUC"] = "Leu";  threeLetterMap["CUA"] = "Leu";
+  threeLetterMap["CUG"] = "Leu";  threeLetterMap["CCU"] = "Pro";  threeLetterMap["CCC"] = "Pro";
+  threeLetterMap["CCA"] = "Pro";  threeLetterMap["CCG"] = "Pro";  threeLetterMap["CAU"] = "His";
+  threeLetterMap["CAC"] = "His";  threeLetterMap["CAA"] = "Gln";  threeLetterMap["CAG"] = "Gln";
+  threeLetterMap["CGU"] = "Arg";  threeLetterMap["CGC"] = "Arg";  threeLetterMap["CGA"] = "Arg";
+  threeLetterMap["CGG"] = "Arg";  threeLetterMap["AUU"] = "Ile";  threeLetterMap["AUC"] = "Ile";
+  threeLetterMap["AUA"] = "Ile";  threeLetterMap["AUG"] = "Met";  threeLetterMap["ACU"] = "Thr";
+  threeLetterMap["ACC"] = "Thr";  threeLetterMap["ACA"] = "Thr";  threeLetterMap["ACG"] = "Thr";  
+  threeLetterMap["AAU"] = "Asn";  threeLetterMap["AAC"] = "Asn";  threeLetterMap["AAA"] = "Lys";
+  threeLetterMap["AAG"] = "Lys";  threeLetterMap["AGU"] = "Ser";  threeLetterMap["AGC"] = "Ser";
+  threeLetterMap["AGA"] = "Arg";  threeLetterMap["AGG"] = "Arg";  threeLetterMap["GUU"] = "Val";
+  threeLetterMap["GUC"] = "Val";  threeLetterMap["GUA"] = "Val";  threeLetterMap["GUG"] = "Val";
+  threeLetterMap["GCU"] = "Ala";  threeLetterMap["GCC"] = "Ala";  threeLetterMap["GCA"] = "Ala";
+  threeLetterMap["GCG"] = "Ala";  threeLetterMap["GAU"] = "Asp";  threeLetterMap["GAC"] = "Asp";  
+  threeLetterMap["GAA"] = "Glu";  threeLetterMap["GAG"] = "Glu";  threeLetterMap["GGU"] = "Gly";
+  threeLetterMap["GGC"] = "Gly";  threeLetterMap["GGA"] = "Gly";  threeLetterMap["GGG"] = "Gly";
+  
+  return threeLetterMap;
+}
+
 // Do the option that user chose
 void ProcessUserChoice(const unsigned int userChoice) {
   switch (userChoice) {
@@ -70,6 +97,7 @@ void DoDNAToProtein() {
 
 // find open reading frames to translate
 void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<std::string> strand2) {
+  std::map<std::string, std::string> aminoAcidMap = CreateAminoAcidCodonMap();
   std::string openReadingFrame1, openReadingFrame2, finalOpenReadingFrame;
   std::vector<DNA> strandVector; // store multiple reading frames
   DNA dnaToBeTranscribed;
@@ -101,88 +129,68 @@ void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<st
     dnaToBeTranscribed.setSequence(finalOpenReadingFrame);
     strandVector.push_back(dnaToBeTranscribed);
   } // else
-
-  PrintReadingFrames(strandVector);
-  TranscribeToRNA(strandVector);
+  
+  // create vector pointer
+  std::shared_ptr<std::vector<DNA> > strandVectorPtr = std::make_shared<std::vector<DNA> >(strandVector);
+  std::shared_ptr<std::map<std::string, std::string> > aminoAcidMapPtr = std::make_shared<std::map<std::string, std::string> >(aminoAcidMap);
+  PrintReadingFrames(strandVector); // print reading frames
+  TranscribeToRNA(strandVectorPtr); // transcribe reading frames to mRNA
+  TranslateMRNAtoProtein(strandVectorPtr, aminoAcidMap); // translate mRNA to Protein
 } // TranslateToProtein
 
 // Find Open Reading Frames of strand to attempt translation to Protein
 std::string FindOpenReadingFrame(std::shared_ptr<std::string> strand) {
-  std::string openReadingFrame;
-  int size = strand->size(), pos= 0, endPos = 0, itr = 0, count = 0;
-  bool isATGPresent = false; // keep track if start codon is present in strand
-  // creating shared pointers for ease of passing through functions
-  std::shared_ptr<int> countPtr = std::make_shared<int>(count), 
-    posPtr = std::make_shared<int>(pos), endPosPtr = std::make_shared<int>(endPos);
-  std::shared_ptr<bool> isATGPresentPtr = std::make_shared<bool>(isATGPresent);
-  std::shared_ptr<std::string> openReadingFramePtr = std::make_shared<std::string>(openReadingFrame);
+  std::string openReadingFrame, possibleOpenReadingFrame;
+  int size = strand->size();
+  int pos = 0, endPos = 0, itr = 0; // dictates what i will be in next iteration
+  int orfSize = 0, orfSize2 = 0; // keep track of reading frame size
+  int count = 0;
+  bool isAtgPresent = false;
 
   for (int i = 0; i < size && itr < size; i = itr) {
-    std::string codon = strand->substr(i, 3); // creating substring of length three
+    std::string codon = strand->substr(i, 3);
 
-    // create shared pointers to get passed to helper function to find start and stop codons
-    std::shared_ptr<std::string> codonPtr = std::make_shared<std::string>(codon);
-    std::shared_ptr<int> iPtr = std::make_shared<int>(i);
-    
-    FindStartCodon(countPtr, codonPtr, isATGPresentPtr, posPtr, iPtr); // find occurence of start codon
-    FindStopCodon(strand, countPtr, codonPtr, isATGPresentPtr, 
-        posPtr, endPosPtr, iPtr, openReadingFramePtr); // find the stop codons
+    if (codon == "ATG") {
+      if (count == 0) {
+        pos = i;
+        isAtgPresent = true;
+      } // if
+      count++;
+    } // if
 
-    // if a start codon is found, increment by 3 since codons are of length 3
-    if (isATGPresent)
-      itr += 3;
-    else // continue incrementing one base at a time to find start codon
+    if (codon == "TAA" || codon == "TAG" || codon == "TGA") {
+      endPos = i;
+      
+      // if there was an ATG prior, get the sequence between the ATG and stop codon
+      if (isAtgPresent) {
+        std::cout << "Found Possible Open Reading Frame: ";
+        possibleOpenReadingFrame = strand->substr(pos, endPos - pos + 3);
+        
+        orfSize = possibleOpenReadingFrame.size(); // keep track if largest reading frame
+
+        if (orfSize > orfSize2)
+          openReadingFrame = possibleOpenReadingFrame;
+
+        orfSize2 = orfSize;
+        std::cout << possibleOpenReadingFrame << std::endl;
+        
+        isAtgPresent = false; // reset reading frame finder
+        count = 0;
+      } // if
+    } // if
+
+    if (isAtgPresent)
+      itr += 3; // increment by three if ATG present
+    else // continue incrementing by one until an ATG is found
       itr++;
 
   } // for
 
-  return *openReadingFramePtr;
+  return openReadingFrame;
 } // FindOpenReadingFrame()
 
-void FindStartCodon(std::shared_ptr<int> count, std::shared_ptr<std::string> codon, std::shared_ptr<bool> isATGPresent, std::shared_ptr<int> pos, std::shared_ptr<int> i) {
-  // if start codon is found within strand
-  if (*codon == "ATG") {
-    if (*count == 0) {
-      *pos = *i;
-      *isATGPresent = true;
-    } // if
-
-    (*count)++;
-  } // if
-} // FindStartCodon
-
-void FindStopCodon(std::shared_ptr<std::string> strand, std::shared_ptr<int> count, std::shared_ptr<std::string> codon, std::shared_ptr<bool> isATGPresent, std::shared_ptr<int> pos, std::shared_ptr<int> endPos, std::shared_ptr<int> i,
-    std::shared_ptr<std::string> openReadingFrame) {
-  std::string possibleOpenReadingFrame;
-  int openReadingFrameSize1 = 0, openReadingFrameSize2 = 0;
-
-  if (*codon == "TAA" || *codon == "TAG" || *codon == "TGA") {
-    *endPos = *i;
-
-    // if there was an ATG present, get the sequence between start codon and stop codon
-    if (*isATGPresent) {
-      std::cout << "Found possible Open Reading Frame: ";
-      possibleOpenReadingFrame = strand->substr(*pos, *endPos - *pos + 3);
-      openReadingFrameSize1 = possibleOpenReadingFrame.size(); // keep track if largest reading frame to translate
-
-      // hold the substring with largest reading frame
-      if (openReadingFrameSize1 > openReadingFrameSize2)
-        *openReadingFrame = possibleOpenReadingFrame;
-      
-      // store for future comparisons of possible reading frames
-      openReadingFrameSize2 = openReadingFrameSize1;
-      std::cout << possibleOpenReadingFrame << std::endl;
-      
-      // reset search for ATG
-      *isATGPresent = false;
-      *count = 0;
-    } // if
-  } // if
-
-} // FindStopCodon
-
 void PrintReadingFrames(std::vector<DNA> strandVector) {
-  std::cout << "Final Open Reading Frame(s): ";
+  std::cout << "\nFinal Open Reading Frame(s): ";
   
   int vectorIteration = 0;
   for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
@@ -195,8 +203,30 @@ void PrintReadingFrames(std::vector<DNA> strandVector) {
   } // for
 } // PrintReadingFrames
 
-void TranscribeToRNA(std::vector<DNA> strandVector) {
-  for (auto itr = strandVector.begin(); itr != strandVector.end(); itr++) {
+// turn DNA to mRNA
+void TranscribeToRNA(std::shared_ptr<std::vector<DNA> > strandVector) {
+  for (auto itr = strandVector->begin(); itr != strandVector->end(); itr++) {
     itr->transcribeToRNA();
   } // for
 } // TranscribeToRNA
+
+// convert mRNA sequence to Protein sequence
+void TranslateMRNAtoProtein(std::shared_ptr<std::vector<DNA> > strandVector, std::map<std::string, std::string> map) {
+  int choice = 0; 
+  for (auto itr = strandVector->begin(); itr != strandVector->end(); itr++) {
+    std::cout << "Splice introns from mRNA sequence (1 - yes, 2 - no)\n> ";
+    std::cin >> choice;
+    std::shared_ptr<int> choicePtr = std::make_shared<int>(choice);
+    CheckIfChoiceInRange(choicePtr);
+    itr->translateMRNAToProtein(choice, map);
+  } // for
+} // TranslateMRNAtoProtein
+
+// check if user inputs valid integer choice
+// will need to check if input is indeed a number and not any other character
+void CheckIfChoiceInRange(std::shared_ptr<int> choicePtr) {
+  while (*choicePtr < 1 || *choicePtr > 2) {
+    std::cout << "Invalid Option. Enter choice (1 - yes, 2 - no)\n> "; 
+    std::cin >> *choicePtr;
+  }
+} // CheckIfChoiceInRange
