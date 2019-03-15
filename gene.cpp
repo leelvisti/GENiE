@@ -97,6 +97,11 @@ void DNA::transcribeToRNA() {
       mRNASequence[i] = 'U';
   } // for
   
+  if (mRNASequence.size() == 0) {
+    std::cout << "No Final Open Reading Frame found to translate to protein\n";
+    exit(EXIT_FAILURE);
+  }
+
   std::cout << "mRNA sequence: " << mRNASequence << std::endl;
 } // TranscribeToRNA
 

@@ -7,6 +7,7 @@
 #include <regex>
 #include <algorithm>
 #include <map>
+#include <iomanip>
 std::string reverseString(const std::string sequence_);
 
 class DNA {

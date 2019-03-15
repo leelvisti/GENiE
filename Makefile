@@ -1,5 +1,5 @@
 GENiE.exe: GENiE.o gene.o auxilliary.o
-	g++ -std=c++14 -o GENiE.exe GENiE.o auxilliary.o gene.o
+	g++ -std=c++14 -g -o GENiE.exe GENiE.o auxilliary.o gene.o
 
 GENiE.o: GENiE.cpp
 	g++ -std=c++14 -c GENiE.cpp
