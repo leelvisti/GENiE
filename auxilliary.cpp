@@ -282,7 +282,7 @@ std::shared_ptr<std::map<std::string, double> > initializeYeastMap(std::shared_p
 // Begin to translate protein back to DNA
 void TranslateProteinToDNA(std::shared_ptr<std::multimap<std::string, std::string> > codonMapPtr, 
     std::shared_ptr<std::map<std::string, double> > frequencyMapPtr, std::shared_ptr<std::string> sequencePtr) {
-  std::string aminoAcid, codon;
+  std::string aminoAcid, codon, highestFrequencyCodon, rnaSequence, dnaSequence;
   std::multimap<double, std::string> mostProbableCodon; // stores frequency of codons per amino acids to find the most probable
   
   // display chart
@@ -312,9 +312,54 @@ void TranslateProteinToDNA(std::shared_ptr<std::multimap<std::string, std::strin
 
       std::cout << frequencyMapItr->second << std::endl;
       mostProbableCodon.insert(std::pair<double, std::string>(frequencyMapItr->second, frequencyMapItr->first));
+      std::shared_ptr<std::multimap<double, std::string> > mostProbableCodonPtr = std::make_shared<std::multimap<double, std::string> >(mostProbableCodon);
+      highestFrequencyCodon = FindMaxFrequencyCodon(mostProbableCodonPtr);
+      ++codonMapItr;
     } // for
+
+    rnaSequence.append(highestFrequencyCodon); // append most probably codon for its respected amino acid
+    mostProbableCodon.clear(); // clear map for next amino acid
   } // for
+
+  // STOP codon appended
+  auto frequencyMapItr = frequencyMapPtr->find("STOP");
+  mostProbableCodon.insert(std::pair<double, std::string>(frequencyMapItr->second, frequencyMapItr->first));
+  std::shared_ptr<std::multimap<double, std::string> > mostProbableCodonPtr = std::make_shared<std::multimap<double, std::string> >(mostProbableCodon);
+  highestFrequencyCodon = FindMaxFrequencyCodon(mostProbableCodonPtr); // find the most probable codon of STOP codon
+  rnaSequence.append(highestFrequencyCodon);
+
+  dnaSequence = transcribeRNAToDNA(rnaSequence);
+  std::cout << "Protein:  " << sequencePtr->append("[STOP]") << " -> RNA: " << rnaSequence << " -> DNA: " << dnaSequence << std::endl;
+  
 } // TranslateProteinToDNA
+
+std::string FindMaxFrequencyCodon(std::shared_ptr<std::multimap<double, std::string> > mostProbableCodonPtr) {
+  double temp = 0.0;
+  std::string codon;
+  
+  for (auto itr = mostProbableCodonPtr->begin(); itr != mostProbableCodonPtr->end(); itr++) {
+    if (itr->first == 1.0) {
+      codon = itr->second;
+      temp = 0.0;
+    } // if
+    else if (itr->first > temp) {
+      codon = itr->second;
+      temp = itr->first;
+    } // else frequency is larger
+  } // for
+
+  return codon;
+} // FindMaxFrequencyCodon
+
+std::string transcribeRNAToDNA(const std::string rnaSequence) {
+  std::string dnaSequence = rnaSequence;
+  for (unsigned int i = 0; i < dnaSequence.size(); i++) {
+    if (dnaSequence[i] == 'U')
+      dnaSequence[i] = 'T';
+  } // for
+
+  return dnaSequence;
+} // transcribeRNAToDNA
 
 // find open reading frames to translate
 void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<std::string> strand2) {

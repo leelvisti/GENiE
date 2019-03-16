@@ -16,6 +16,8 @@ std::shared_ptr<std::multimap<std::string, std::string> > initializeCodonMap(std
 std::shared_ptr<std::map<std::string, double> > initializeEColiMap(std::shared_ptr<std::map<std::string, double> > eColiMap);
 std::shared_ptr<std::map<std::string, double> > initializeDrosoMap(std::shared_ptr<std::map<std::string, double> > drosoMap);
 std::shared_ptr<std::map<std::string, double> > initializeYeastMap(std::shared_ptr<std::map<std::string, double> > yeastMap);
+std::string FindMaxFrequencyCodon(std::shared_ptr<std::multimap<double, std::string> > mostProbableCodonPtr);
+std::string transcribeRNAToDNA(const std::string rnaSequence);
 void DoProteinToDNA();
 void TranslateToProtein(std::shared_ptr<std::string> strand1, std::shared_ptr<std::string> strand2);
 std::string FindOpenReadingFrame(std::shared_ptr<std::string> strand);
